@@ -35,6 +35,9 @@ public class User {
 
   private Instant created = Instant.now();
 
+  @NonNull
+  private Instant modified = Instant.now();
+
   public long getId() {
     return id;
   }
@@ -68,6 +71,14 @@ public class User {
 
   public void setCreated(@NonNull Instant created) {
     this.created = created;
+  }
+
+  @NonNull
+  public Instant getModified() {
+    return modified;
+  }
+  public void setModified(@NonNull Instant modified) {
+    this.modified = modified;
   }
 
 }
