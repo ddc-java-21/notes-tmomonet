@@ -39,5 +39,5 @@ public interface ImageDao {
   LiveData<Image> select(long imageId);
 
   @Query("SELECT * FROM image WHERE note_id = :noteId ORDER BY created ASC")
-  LiveData<List<Image>> selectWhereNoteIdOrderByCreatedAsc(long noteId);
+  LiveData<List<Image>> selectbyNote(long noteId);
 }

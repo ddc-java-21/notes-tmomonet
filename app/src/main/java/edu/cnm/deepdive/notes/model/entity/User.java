@@ -1,5 +1,6 @@
 package edu.cnm.deepdive.notes.model.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Index;
@@ -24,13 +25,15 @@ public class User {
   @ColumnInfo(name = "user_id", collate = ColumnInfo.NOCASE)
   private long id;
 
+  @NonNull
   @ColumnInfo(name = "oauth_key")
-  private String oauthKey;
+  private String oauthKey = "";
 
+  @NonNull
   @ColumnInfo(name = "display_name", collate = ColumnInfo.NOCASE)
-  private String displayName;
+  private String displayName ="";
 
-  private Instant created;
+  private Instant created = Instant.now();
 
   public long getId() {
     return id;
@@ -40,27 +43,30 @@ public class User {
     this.id = id;
   }
 
+  @NonNull
   public String getOauthKey() {
     return oauthKey;
   }
 
-  public void setOauthKey(String oauthKey) {
+  public void setOauthKey(@NonNull String  oauthKey) {
     this.oauthKey = oauthKey;
   }
 
+  @NonNull
   public String getDisplayName() {
     return displayName;
   }
 
-  public void setDisplayName(String displayName) {
+  public void setDisplayName(@NonNull String displayName) {
     this.displayName = displayName;
   }
 
+  @NonNull
   public Instant getCreated() {
     return created;
   }
 
-  public void setCreated(Instant created) {
+  public void setCreated(@NonNull Instant created) {
     this.created = created;
   }
 

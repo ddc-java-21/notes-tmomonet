@@ -1,5 +1,6 @@
 package edu.cnm.deepdive.notes.model.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.ColumnInfo.Collate;
 import androidx.room.Entity;
@@ -37,10 +38,13 @@ public class Image {
   @ColumnInfo(name = "mime_type", index = true)
   private String mimeType;
 
+  /** @noinspection NotNullFieldNotInitialized*/
+  @NonNull
   private String uri;
 
+  @NonNull
   @ColumnInfo(index = true)
-  private Instant created;
+  private Instant created = Instant.now();
 
   @ColumnInfo(name = "note_id", index = true)
   private long noteId;
