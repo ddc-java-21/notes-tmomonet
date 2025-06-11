@@ -38,7 +38,7 @@ public class NoteRepository {
     return (note.getId() == 0)
         ? noteDao.insertAndGet(note)
         : noteDao.updateTimestampAndSave(note)
-    .subscribeOn(scheduler)
+    .subscribeOn(scheduler);
   }
 
 }
