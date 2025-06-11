@@ -5,10 +5,10 @@ import java.time.Instant;
 public class Image {
 
   /*
-  C - Attach Images to a note
-  R - Retrieve all images for a note
+  C - Attach images
+  R - Retrieve images from a gallery, possibly filter, or sort?
   U - Update caption
-  D - Remove Image from a note
+  D - Remove Images?
    */
 
   private long id;

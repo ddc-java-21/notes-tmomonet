@@ -4,6 +4,13 @@ import java.time.Instant;
 
 public class User {
 
+  /*
+  C - Create notes
+  R - Retrieve notes and images from self, possibly others shared to user
+  U - Update notes, captions, and images
+  D - Remove notes, images, and captions (account deletion?)
+   */
+
   private long id;
   private String oauthKey;
   private String displayName;

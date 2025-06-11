@@ -3,7 +3,12 @@ package edu.cnm.deepdive.notes.model.entity;
 import java.time.Instant;
 
 public class Note {
-
+  /*
+    C - Attach Images to a note
+    R - Retrieve all images for a note
+    U - Update caption
+    D - Remove Image from a note
+     */
   private long id;
   private String title;
   private String description;
