@@ -42,8 +42,9 @@ public class User {
     return id;
   }
 
-  public void setId(long id) {
+  public User setId(long id) {
     this.id = id;
+    return this;
   }
 
   @NonNull
@@ -51,8 +52,9 @@ public class User {
     return oauthKey;
   }
 
-  public void setOauthKey(@NonNull String  oauthKey) {
+  public User setOauthKey(@NonNull String oauthKey) {
     this.oauthKey = oauthKey;
+    return this;
   }
 
   @NonNull
@@ -60,25 +62,27 @@ public class User {
     return displayName;
   }
 
-  public void setDisplayName(@NonNull String displayName) {
+  public User setDisplayName(@NonNull String displayName) {
     this.displayName = displayName;
+    return this;
   }
 
-  @NonNull
   public Instant getCreated() {
     return created;
   }
 
-  public void setCreated(@NonNull Instant created) {
+  public User setCreated(Instant created) {
     this.created = created;
+    return this;
   }
 
   @NonNull
   public Instant getModified() {
     return modified;
   }
-  public void setModified(@NonNull Instant modified) {
-    this.modified = modified;
-  }
 
+  public User setModified(@NonNull Instant modified) {
+    this.modified = modified;
+    return this;
+  }
 }

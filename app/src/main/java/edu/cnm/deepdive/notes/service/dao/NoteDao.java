@@ -7,34 +7,35 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 import edu.cnm.deepdive.notes.model.entity.Note;
-import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
+import java.time.Instant;
 import java.util.List;
 
 @Dao
 public interface NoteDao {
 
   @Insert
-  Single<Long> insert(Note note);
+  Single<Long> _insert(Note note);
 
-  default Single<Note> insertAndGet(Note note) {
-    return insert(note)
-        .map((id) ->{
-          note.setId(id);
-          return note;
-        });
-  }
-  @Update
-  Single<Integer> update(Note note);
-
-  default Single<Note> updateTimestampAndSave(Note note) {
-    return Single.just(note)
-        .map((n) -> {
-          n.setModified(n.getModified());
-          return n;
+  default Single<Note> insert(Note note) {
+    return Single
+        .just(note)
+        .doOnSuccess((n) -> {
+          Instant now = Instant.now();
+          n.setCreated(now)
+              .setModified(now);
         })
+        .flatMap(this::_insert)
+            .map(note::setId);
+        }
+  @Update
+  Single<Integer> _update(Note note);
+
+  default Single<Note> update(Note note) {
+    return Single.just(note)
+        .doOnSuccess((n) -> n.setModified(Instant.now()))
         .flatMap(this::update)
-        .map((i) -> note);
+        .map((count) -> note);
   }
 
   @Delete

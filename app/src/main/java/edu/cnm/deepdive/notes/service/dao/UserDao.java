@@ -4,11 +4,9 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
-import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 import edu.cnm.deepdive.notes.model.entity.User;
-import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import java.time.Instant;
@@ -18,44 +16,33 @@ import java.util.List;
 public interface UserDao {
 
   @Insert
-  Single<Long> insert(User user);
+  Single<Long> _insert(User user);
 
-  default Single<User> insertAndGet(User user) {
-    return insert(user)
-        .map((id) ->{
-          user.setId(id);
-          return user;
-        });
-  }
-
-  @Insert(onConflict = OnConflictStrategy.IGNORE)
-  Single<List<Long>> insert(List<User> users);
-
-  @Insert(onConflict = OnConflictStrategy.IGNORE)
-  Single<List<Long>> insert(User ... users);
-
-  @Update
-  Completable update(User user);
-
-  default Single<User> updateTimestampAndSave(User user){
+  default Single<User> insert(User user) {
     return Single
         .just(user)
-        .map((u) ->{
-          u.setModified(Instant.now());
-          return u;
+        .doOnSuccess((u) -> {
+          Instant now = Instant.now();
+          u.setCreated(now)
+              .setModified(now);
         })
-        .flatMapCompletable(this::update)
-        .andThen(Single.just(user));
+        .flatMap(this::_insert)
+        .map(user::setId);
   }
 
-  @Update(onConflict = OnConflictStrategy.IGNORE)
-  Single<Integer> update(User... users);
+  @Update
+  Single<Integer> _update(User user);
 
-
+  default Single<User> update(User user){
+    return Single
+        .just(user)
+        .doOnSuccess((u) -> u.setModified(Instant.now()))
+        .flatMap(this::update)
+        .map(count -> user);
+  }
 
   @Delete
-  Completable delete(User user);
-
+  Single<Integer> delete(User user);
 
   @Delete
   Single<Integer> delete(User... users);

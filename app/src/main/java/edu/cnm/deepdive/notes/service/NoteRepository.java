@@ -1,6 +1,5 @@
 package edu.cnm.deepdive.notes.service;
 
-
 import androidx.lifecycle.LiveData;
 import edu.cnm.deepdive.notes.model.entity.Note;
 import edu.cnm.deepdive.notes.service.dao.NoteDao;

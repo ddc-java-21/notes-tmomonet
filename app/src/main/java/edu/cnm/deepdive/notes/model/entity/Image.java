@@ -49,52 +49,59 @@ public class Image {
   @ColumnInfo(name = "note_id", index = true)
   private long noteId;
 
-
   public long getId() {
     return id;
   }
 
-  public void setId(long id) {
+  public Image setId(long id) {
     this.id = id;
+    return this;
   }
 
   public String getCaption() {
     return caption;
   }
 
-  public void setCaption(String caption) {
+  public Image setCaption(String caption) {
     this.caption = caption;
+    return this;
   }
 
   public String getMimeType() {
     return mimeType;
   }
 
-  public void setMimeType(String mimeType) {
+  public Image setMimeType(String mimeType) {
     this.mimeType = mimeType;
+    return this;
   }
 
+  @NonNull
   public String getUri() {
     return uri;
   }
 
-  public void setUri(String uri) {
+  public Image setUri(@NonNull String uri) {
     this.uri = uri;
+    return this;
   }
 
+  @NonNull
   public Instant getCreated() {
     return created;
   }
 
-  public void setCreated(Instant created) {
+  public Image setCreated(@NonNull Instant created) {
     this.created = created;
+    return this;
   }
 
   public long getNoteId() {
     return noteId;
   }
 
-  public void setNoteId(long noteId) {
+  public Image setNoteId(long noteId) {
     this.noteId = noteId;
+    return this;
   }
 }
