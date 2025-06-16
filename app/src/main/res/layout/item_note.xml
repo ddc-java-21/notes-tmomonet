@@ -4,6 +4,7 @@
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:padding="@dimen/half_dynamic_spacing"
   android:layout_margin="@dimen/half_dynamic_spacing"
   android:clickable="true"
@@ -43,7 +44,7 @@
       app:layout_constraintBaseline_toBaselineOf="@id/title_layout"
       app:layout_constraintStart_toEndOf="@id/title_layout"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_weight="@integer/created_weight"
+      app:layout_constraintHorizontal_weight="@integer/created_weight"/>
 
     <com.google.android.material.textfield.TextInputLayout
       android:id="@+id/description_layout"
@@ -57,12 +58,7 @@
       app:layout_constraintEnd_toStartOf="@id/thumbnail"
       app:layout_constraintHorizontal_weight="@integer/title_weight">
 
-      <com.google.android.material.textfield.TextInputEditText
-        android:id="@id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:hint="@string/title_hint"/>
+
 
       <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/description"
@@ -71,9 +67,28 @@
         android:inputType="textMultiLine"
         android:minLines="@integer/min_description_lines"
         android:maxLines="@integer/max_description_lines"
-        android:hint="@string/title_hint"/>
+        android:hint="@string/description_hint"
+        tools:text="a Series of complicated description."
+        />
 
     </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+      android:id="@+id/thumbnail"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:scaleType="fitCenter"
+      android:adjustViewBounds="true"
+      android:layout_marginHorizontal="@dimen/half_dynamic_spacing"
+      android:layout_marginBottom="@dimen/half_dynamic_spacing"
+      android:layout_marginTop="0dp"
+      app:layout_constraintStart_toEndOf="@id/description_layout"
+      app:layout_constraintTop_toTopOf="@id/description_layout"
+      app:layout_constraintEnd_toEndOf="parent"
+      tools:src="@android:drawable/gallery_thumb"
+      app:layout_constraintHorizontal_weight="@integer/created_weight"
+      tools:ignore="ContentDescription"/>
+
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 

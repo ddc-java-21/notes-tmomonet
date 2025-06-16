@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import dagger.hilt.android.scopes.FragmentScoped;
+import edu.cnm.deepdive.notes.databinding.ItemNoteBinding;
 import edu.cnm.deepdive.notes.model.entity.Note;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -34,15 +35,13 @@ public class NoteAdapter extends Adapter<ViewHolder> {
   @NonNull
   @Override
   public ViewHolder onCreateViewHolder(@NonNull ViewGroup container, int itemType) {
-    // TODO: 6/16/2025 Inflate the item layout and pass it to the Holder constructor,
-    //  then return the new Holder.
-    return null;
+    ItemNoteBinding binding = ItemNoteBinding.inflate(inflater, container, false);
+    return new Holder(binding, formatter);
   }
 
   @Override
   public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
-    // TODO: 6/16/2025 Get the note at the specified position; pass that note and the formatter
-    //  (and the position) to the Holder.bind method.
+    ((Holder) viewHolder).bind(position, notes.get(position));
   }
 
   @Override
@@ -60,12 +59,20 @@ public class NoteAdapter extends Adapter<ViewHolder> {
 
   private static class Holder extends ViewHolder {
 
-    Holder(@NonNull View itemView) {
-      super(itemView);
+    private final ItemNoteBinding binding;
+    private final DateTimeFormatter formatter;
+
+    Holder(@NonNull ItemNoteBinding binding, @NonNull DateTimeFormatter formatter) {
+      super(binding.getRoot());
+      this.binding =binding;
+      this.formatter = formatter;
     }
 
-    // TODO: 6/16/2025 Define bind method to take a specified Note and insert its contents into the
-    //  widgets referenced by the binding objects.
+    void bind(int position, Note note) {
+      // TODO: 6/16/2025 Set contents of binding fields to hold contents of note;
+      //  attach event listeners to binding.getRoot()
+
+    }
 
 
   }
