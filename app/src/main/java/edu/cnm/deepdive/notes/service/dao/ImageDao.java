@@ -24,7 +24,8 @@ public interface ImageDao {
         .just(image)
         .doOnSuccess((img) -> img.setCreated(Instant.now()))
         .flatMap(this::_insert)
-        .map(image::setId);
+        .doOnSuccess(image::setId)
+        .map((id) -> image);
   }
 
   @Insert
