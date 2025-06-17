@@ -8,11 +8,13 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
+import dagger.hilt.android.qualifiers.ActivityContext;
 import dagger.hilt.android.scopes.FragmentScoped;
 import edu.cnm.deepdive.notes.databinding.ItemNoteBinding;
 import edu.cnm.deepdive.notes.model.entity.Note;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ public class NoteAdapter extends Adapter<ViewHolder> {
   private final DateTimeFormatter formatter;
 
   @Inject
-  NoteAdapter(Context context) {
+  NoteAdapter(@ActivityContext Context context) {
     notes = new ArrayList<>();
     inflater = LayoutInflater.from(context);
     formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT);
@@ -76,9 +78,10 @@ public class NoteAdapter extends Adapter<ViewHolder> {
       binding.description.setText(noteDescription != null ? noteDescription : "");
       binding.created.setText(
           formatter.format(
-              LocalDateTime.ofInstant(note.getCreated(), ZoneId.systemDefault())));
+              ZonedDateTime.ofInstant(note.getCreated(), ZoneId.systemDefault())));
+      binding.thumbnail.setVisibility((View.GONE));
       // TODO: 6/17/2025 Display Thumbnail 
-      // TODO: 6/17/2025 Attach Click Listener 
+      // TODO: 6/17/2025 Attach Click Listener
     }
 
 

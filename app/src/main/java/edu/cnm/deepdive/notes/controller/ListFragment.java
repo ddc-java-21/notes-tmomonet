@@ -17,12 +17,19 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 import dagger.hilt.android.AndroidEntryPoint;
 import edu.cnm.deepdive.notes.databinding.FragmentListBinding;
+import edu.cnm.deepdive.notes.view.adapter.NoteAdapter;
+import edu.cnm.deepdive.notes.viewmodel.NoteViewModel;
+import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class ListFragment extends Fragment implements MenuProvider {
 
+  @Inject
+  NoteAdapter adapter;
+
   private FragmentListBinding binding;
-  // TODO: 6/16/2025 Create a field for NoteViewModel.
+  private NoteViewModel viewModel;
+
 
   @Override
   // TODO: 6/16/2025
@@ -31,7 +38,10 @@ public class ListFragment extends Fragment implements MenuProvider {
     FragmentActivity activity = requireActivity();
     ViewModelProvider provider = new ViewModelProvider(activity);
     LifecycleOwner owner = getViewLifecycleOwner();
-    // TODO: 6/16/2025 Get and observe LiveData in viewmodels, with observers that update the UI
+    viewModel = provider.get(NoteViewModel.class);
+    viewModel
+        .getNotes()
+        .observe(owner, (notes) -> adapter.setNotes(notes));
     activity.addMenuProvider(this, owner, State.RESUMED);
   }
 
@@ -41,6 +51,7 @@ public class ListFragment extends Fragment implements MenuProvider {
   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
       @Nullable Bundle savedInstanceState) {
     binding = FragmentListBinding.inflate(inflater, container, false);
+    binding.notes.setAdapter(adapter);
     return binding.getRoot();
   }
 
