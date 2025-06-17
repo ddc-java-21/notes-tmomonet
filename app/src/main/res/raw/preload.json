@@ -1,0 +1,18 @@
+{
+  "oauthKey": "01234567890123456789",
+  "displayName": "Test User",
+  "notes": [
+    {
+      "title" : "A note of some note",
+      "description" : "Desc1"
+    },
+    {
+      "title" : "A second note of some note",
+      "description" : "Desc2"
+    },
+    {
+      "title" : "A third note of some note",
+      "description" : "Desc3"
+    }
+  ]
+}
