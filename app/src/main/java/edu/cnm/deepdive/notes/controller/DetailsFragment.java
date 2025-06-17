@@ -81,11 +81,13 @@ public class DetailsFragment extends Fragment {
 
   private void checkCameraPermission(){
     if (!hasCameraPermission()) {
-      if (shouldExplainCameraPermission()){
+      if (shouldExplainCameraPermission()) {
         explainCameraPermission();
+      } else {
+        requestCameraPermission();
       }
     } else{
-      requestCameraPermission();
+      // TODO: 6/17/2025 Enable camera captujre controls
     }
   }
 
