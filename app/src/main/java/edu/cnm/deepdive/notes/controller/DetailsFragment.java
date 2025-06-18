@@ -58,8 +58,17 @@ public class DetailsFragment extends Fragment {
     binding = FragmentDetailsBinding.inflate(inflater, container, false);
     binding.editButton.setOnClickListener((v -> viewModel.setEditing(true)));
     binding.saveButton.setOnClickListener((v -> {
-      // TODO: 6/18/2025 Update note field and invoke save method in view model
+      boolean addObserver = (note.getId() == 0);
+      note.setTitle(binding.titleEditable.getText().toString().strip());
+      String description = binding.descriptionEditable.getText().toString().strip();
+      note.setDescription(description.isEmpty() ? null : description);
+      viewModel.save(note);
       viewModel.setEditing(false);
+      if (addObserver){
+        viewModel
+            .getNote()
+            .observe(getViewLifecycleOwner(), this::handleNote);
+      }
     }));
     binding.cancelButton.setOnClickListener((v -> {
       // TODO: 6/18/2025 Discard changes, return note field to original state
@@ -84,6 +93,8 @@ public class DetailsFragment extends Fragment {
     }
     else {
       note = new NoteWithImages();
+      handleNote(note);
+      viewModel.setEditing(true);
     }
     viewModel.getCaptureUri().observe(owner, this::handleCaptureUri);
     viewModel
@@ -103,12 +114,13 @@ public class DetailsFragment extends Fragment {
       binding.saveButton.setVisibility(View.VISIBLE);
       binding.cancelButton.setVisibility(View.VISIBLE);
     } else {
+      binding.staticContent.setVisibility(View.VISIBLE);
+      binding.editableContent.setVisibility(View.GONE);
       binding.editButton.setVisibility(View.VISIBLE);
       binding.addPhoto.setVisibility(View.GONE);
       binding.saveButton.setVisibility(View.GONE);
       binding.cancelButton.setVisibility(View.GONE);
-      binding.editableContent.setVisibility(View.VISIBLE);
-      binding.staticContent.setVisibility(View.GONE);
+
     }
   }
 
@@ -120,6 +132,7 @@ public class DetailsFragment extends Fragment {
 
   private void handleNote(NoteWithImages note) {
     this.note = note;
+    noteId = note.getId();
     binding.titleStatic.setText(note.getTitle());
     binding.titleEditable.setText(note.getTitle());
     binding.descriptionStatic.setText(note.getDescription());

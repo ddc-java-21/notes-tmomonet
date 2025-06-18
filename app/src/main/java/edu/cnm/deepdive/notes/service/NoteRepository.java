@@ -38,6 +38,7 @@ public class NoteRepository {
 
   public Single<Note> save(NoteWithImages note){
     // TODO: 6/17/2025 Modify to insert/update images
+    note.setUserId(1); // FIXME: 6/18/2025 Replace after adding user signin
     return (note.getId() == 0)
         ? noteDao.insert(note)
         : noteDao.update(note)

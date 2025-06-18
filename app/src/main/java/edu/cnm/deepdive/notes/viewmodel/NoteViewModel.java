@@ -13,11 +13,13 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import dagger.hilt.android.qualifiers.ApplicationContext;
+import edu.cnm.deepdive.notes.model.entity.Image;
 import edu.cnm.deepdive.notes.model.entity.Note;
 import edu.cnm.deepdive.notes.model.pojo.NoteWithImages;
 import edu.cnm.deepdive.notes.service.NoteRepository;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.disposables.Disposable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
@@ -27,17 +29,20 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
   private final Context context;
   private final NoteRepository repository;
   private final MutableLiveData<Long> noteId;
+  private final LiveData<NoteWithImages> note;
+  private final MutableLiveData<List<Image>> images;
   private final MutableLiveData<Uri> captureUri;
   private final MutableLiveData<Throwable> throwable;
   private final MutableLiveData<Boolean> editing;
   private final MutableLiveData<Boolean> cameraPermission;
   private final MediatorLiveData<VisibilityFlags> visibilityFlags;
   private final CompositeDisposable pending;
-  private final LiveData<NoteWithImages> note;
 
   private Uri pendingCaptureUri;
 
-  /** @noinspection DataFlowIssue*/
+  /**
+   * @noinspection DataFlowIssue
+   */
   @Inject
   NoteViewModel(@ApplicationContext Context context, NoteRepository repository) {
 
@@ -45,6 +50,13 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     this.repository = repository;
     noteId = new MutableLiveData<>();
     note = Transformations.switchMap(noteId, repository::get);
+    images = new MutableLiveData<>(new ArrayList<>());
+    note.observeForever((note) -> {
+      List<Image> images = this.images.getValue();
+      images.clear();
+      images.addAll(note.getImages());
+      this.images.setValue(images);
+    });
     captureUri = new MutableLiveData<>();
     editing = new MutableLiveData<>(false);
     cameraPermission = new MutableLiveData<>(false);
@@ -53,9 +65,10 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
       //noinspection DataFlowIssue
       visibilityFlags.setValue(new VisibilityFlags(editing, cameraPermission.getValue()));
     });
-    visibilityFlags.addSource(cameraPermission, (permission) -> visibilityFlags.setValue(new VisibilityFlags(editing.getValue(), permission)));
+    visibilityFlags.addSource(cameraPermission, (permission) -> visibilityFlags.setValue(
+        new VisibilityFlags(editing.getValue(), permission)));
 
-  throwable = new MutableLiveData<>();
+    throwable = new MutableLiveData<>();
     pending = new CompositeDisposable();
   }
 
@@ -63,7 +76,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     return noteId;
   }
 
-  public void setNoteId(long noteId){
+  public void setNoteId(long noteId) {
     this.noteId.setValue(noteId);
   }
 
@@ -71,8 +84,26 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     return repository.getAll();
   }
 
-  public  LiveData<NoteWithImages> getNote() {
+  public LiveData<NoteWithImages> getNote() {
     return note;
+  }
+
+  public LiveData<List<Image>> getImages() {
+    return images;
+  }
+
+  public void addImage(Image image) {
+    List<Image> images = this.images.getValue();
+    //noinspection DataFlowIssue
+    images.add(image);
+    this.images.setValue(images);
+  }
+
+  public void removeImage(Image image) {
+    List<Image> images = this.images.getValue();
+    //noinspection DataFlowIssue
+    images.remove(image);
+    this.images.setValue(images);
   }
 
   public LiveData<Uri> getCaptureUri() {
@@ -91,9 +122,10 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     this.editing.setValue(editing);
   }
 
-  public LiveData<Boolean> getCameraPermission(){
+  public LiveData<Boolean> getCameraPermission() {
     return cameraPermission;
   }
+
   public void setCameraPermission(boolean cameraPermission) {
     this.cameraPermission.setValue(cameraPermission);
   }
@@ -103,28 +135,37 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
   }
 
   public void confirmCapture(boolean success) {
-    captureUri.setValue(success ? pendingCaptureUri : null);
+    if (success) {
+      captureUri.setValue(pendingCaptureUri);
+      Image image = new Image();
+      image.setUri(pendingCaptureUri);
+      addImage(image);
+    } else {
+      captureUri.setValue(null);
+    }
     pendingCaptureUri = null;
   }
 
   public void save(NoteWithImages note) {
     throwable.setValue(null);
-    Disposable disp = repository
-        .save(note)
-        .ignoreElement()
+    Single.just(note)
+        .doOnSuccess((n) -> n.getImages().clear())
+        .doOnSuccess((n) -> n.getImages().addAll(images.getValue()))
+        .flatMap(repository::save)
         .subscribe(
-            () -> {},
+            (n) -> noteId.postValue(n.getId()),
             this::postThrowable,
             pending
         );
   }
 
-  public void remove(Note note){
+  public void remove(Note note) {
     throwable.setValue(null);
     repository
         .remove(note)
         .subscribe(
-            () -> {},
+            () -> {
+            },
             this::postThrowable,
             pending
         );
@@ -146,6 +187,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     this.throwable.postValue(throwable);
   }
 
-  public record VisibilityFlags(boolean editing, boolean cameraPermission){
-    }
+  public record VisibilityFlags(boolean editing, boolean cameraPermission) {
+
+  }
 }
