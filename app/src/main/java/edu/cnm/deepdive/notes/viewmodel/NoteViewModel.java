@@ -23,12 +23,12 @@ import javax.inject.Inject;
 @HiltViewModel
 public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver {
 
-
   private final Context context;
   private final NoteRepository repository;
   private final MutableLiveData<Long> noteId;
   private final MutableLiveData<Uri> captureUri;
   private final MutableLiveData<Throwable> throwable;
+  private final MutableLiveData<Boolean> editing;
   private final CompositeDisposable pending;
   private final LiveData<NoteWithImages> note;
 
@@ -42,6 +42,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     noteId = new MutableLiveData<>();
     note = Transformations.switchMap(noteId, repository::get);
     captureUri = new MutableLiveData<>();
+    editing = new MutableLiveData<>(false);
     throwable = new MutableLiveData<>();
     pending = new CompositeDisposable();
   }
@@ -68,6 +69,14 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
 
   public void setPendingCaptureUri(Uri pendingCaptureUri) {
     this.pendingCaptureUri = pendingCaptureUri;
+  }
+
+  public LiveData<Boolean> getEditing() {
+    return editing;
+  }
+
+  public void setEditing(boolean editing) {
+    this.editing.setValue(editing);
   }
 
   public void confirmCapture(boolean success) {

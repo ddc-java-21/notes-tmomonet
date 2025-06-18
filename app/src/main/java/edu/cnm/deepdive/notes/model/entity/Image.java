@@ -1,5 +1,6 @@
 package edu.cnm.deepdive.notes.model.entity;
 
+import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.ColumnInfo.Collate;
@@ -40,7 +41,7 @@ public class Image {
 
   /** @noinspection NotNullFieldNotInitialized*/
   @NonNull
-  private String uri;
+  private Uri uri;
 
   @NonNull
   @ColumnInfo(index = true)
@@ -77,11 +78,11 @@ public class Image {
   }
 
   @NonNull
-  public String getUri() {
+  public Uri getUri() {
     return uri;
   }
 
-  public void setUri(@NonNull String uri) {
+  public void setUri(@NonNull Uri uri) {
     this.uri = uri;
 
   }

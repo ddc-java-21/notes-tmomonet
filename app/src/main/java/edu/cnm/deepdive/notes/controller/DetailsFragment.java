@@ -40,22 +40,22 @@ public class DetailsFragment extends Fragment {
   private long noteId;
   private NoteWithImages note;
   private ActivityResultLauncher<Uri> takePictureLauncher;
+  private boolean cameraPermissionGranted;
 
-  private final ActivityResultLauncher<String> requestCameraPermissionLauncher =
-      registerForActivityResult(new ActivityResultContracts.RequestPermission(), (granted) ->{
-    if (granted) {
-      // TODO: 6/17/2025 Make camera capture control visible
-    }
-    else {
-      // TODO: 6/17/2025 Make camera capture control GONE
-    }
-  });
-
+  private ActivityResultLauncher<String> requestCameraPermissionLauncher;
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     noteId = DetailsFragmentArgs.fromBundle(getArguments()).getNoteId();
+    requestCameraPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), (granted) ->{
+      if (granted) {
+        cameraPermissionGranted = true;
+      }
+      else {
+        cameraPermissionGranted = false;
+      }
+    });
   }
 
   @Nullable
@@ -63,6 +63,16 @@ public class DetailsFragment extends Fragment {
   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
       @Nullable Bundle savedInstanceState) {
     binding = FragmentDetailsBinding.inflate(inflater, container, false);
+    binding.editButton.setOnClickListener((v -> viewModel.setEditing(true)));
+    binding.saveButton.setOnClickListener((v -> {
+      // TODO: 6/18/2025 Update note field and invoke save method in view model
+      viewModel.setEditing(false);
+    }));
+    binding.cancelButton.setOnClickListener((v -> {
+      // TODO: 6/18/2025 Discard changes, return note field to original state
+      viewModel.setEditing(false);
+    }));
+    binding.addPhoto.setOnClickListener((v) -> capture());
     return binding.getRoot();
   }
 
@@ -82,16 +92,32 @@ public class DetailsFragment extends Fragment {
     else {
       note = new NoteWithImages();
     }
+    viewModel.getCaptureUri().observe(owner, this::handleCaptureUri);
     viewModel
-        .getCaptureUri()
-        .observe(owner, (uri) -> {
-          Image image = new Image();
-          image.setUri(uri);
-          note.getImages().add(image);
-        });
+        .getEditing()
+        .observe(owner, this::handleEditing);
     takePictureLauncher = registerForActivityResult(new TakePicture(),
         viewModel::confirmCapture);
     checkCameraPermission();
+  }
+  private void handleEditing(Boolean editing) {
+    if (editing) {
+      binding.editButton.setVisibility(View.GONE);
+      binding.addPhoto.setVisibility(cameraPermissionGranted ? View.VISIBLE : View.GONE);
+      binding.saveButton.setVisibility(View.VISIBLE);
+      binding.cancelButton.setVisibility(View.VISIBLE);
+    } else {
+      binding.editButton.setVisibility(View.VISIBLE);
+      binding.addPhoto.setVisibility(View.GONE);
+      binding.saveButton.setVisibility(View.GONE);
+      binding.cancelButton.setVisibility(View.GONE);
+    }
+  }
+
+  private void handleCaptureUri(Uri uri) {
+    Image image = new Image();
+    image.setUri(uri);
+    note.getImages().add(image);
   }
 
   @Override
@@ -108,7 +134,7 @@ public class DetailsFragment extends Fragment {
         requestCameraPermission();
       }
     } else{
-      // TODO: 6/17/2025 Enable camera capture controls
+      cameraPermissionGranted = true;
     }
   }
 
