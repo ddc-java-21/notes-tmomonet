@@ -23,9 +23,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.snackbar.Snackbar;
 import edu.cnm.deepdive.notes.R;
 import edu.cnm.deepdive.notes.databinding.FragmentDetailsBinding;
-import edu.cnm.deepdive.notes.model.entity.Image;
 import edu.cnm.deepdive.notes.model.pojo.NoteWithImages;
 import edu.cnm.deepdive.notes.service.ImageFileProvider;
+import edu.cnm.deepdive.notes.view.adapter.ImageAdapter;
 import edu.cnm.deepdive.notes.viewmodel.NoteViewModel;
 import edu.cnm.deepdive.notes.viewmodel.NoteViewModel.VisibilityFlags;
 import java.io.File;
@@ -96,7 +96,12 @@ public class DetailsFragment extends Fragment {
       handleNote(note);
       viewModel.setEditing(true);
     }
-    viewModel.getCaptureUri().observe(owner, this::handleCaptureUri);
+    viewModel
+        .getImages()
+        .observe(owner, (images) -> {
+          ImageAdapter adapter = new ImageAdapter(requireContext(), images);
+          binding.images.setAdapter(adapter);
+        });
     viewModel
         .getVisibilityFlags()
         .observe(owner, flags -> handleVisibilityFlags(flags));
@@ -122,12 +127,6 @@ public class DetailsFragment extends Fragment {
       binding.cancelButton.setVisibility(View.GONE);
 
     }
-  }
-
-  private void handleCaptureUri(Uri uri) {
-    Image image = new Image();
-    image.setUri(uri);
-    note.getImages().add(image);
   }
 
   private void handleNote(NoteWithImages note) {

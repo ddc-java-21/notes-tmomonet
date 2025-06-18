@@ -63,7 +63,7 @@ public interface NoteDao {
   default Single<Note> update(Note note) {
     return Single.just(note)
         .doOnSuccess((n) -> n.setModified(Instant.now()))
-        .flatMap(this::update)
+        .flatMap(this::_update)
         .map((count) -> note);
   }
 

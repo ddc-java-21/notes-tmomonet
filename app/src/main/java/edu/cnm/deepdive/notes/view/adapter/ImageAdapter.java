@@ -14,9 +14,9 @@ import java.util.List;
 
 public class ImageAdapter extends ArrayAdapter<Image> {
 
-  public ImageAdapter(@NonNull Context context, int resource,
+  public ImageAdapter(@NonNull Context context,
       @NonNull List<Image> images) {
-    super(context, resource, images);
+    super(context, R.layout.item_image, images);
   }
 
   @NonNull
