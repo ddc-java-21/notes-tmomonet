@@ -27,6 +27,7 @@ import edu.cnm.deepdive.notes.model.entity.Image;
 import edu.cnm.deepdive.notes.model.pojo.NoteWithImages;
 import edu.cnm.deepdive.notes.service.ImageFileProvider;
 import edu.cnm.deepdive.notes.viewmodel.NoteViewModel;
+import edu.cnm.deepdive.notes.viewmodel.NoteViewModel.VisibilityFlags;
 import java.io.File;
 import java.util.UUID;
 
@@ -39,23 +40,15 @@ public class DetailsFragment extends Fragment {
   private NoteViewModel viewModel;
   private long noteId;
   private NoteWithImages note;
-  private ActivityResultLauncher<Uri> takePictureLauncher;
-  private boolean cameraPermissionGranted;
-
   private ActivityResultLauncher<String> requestCameraPermissionLauncher;
+  private ActivityResultLauncher<Uri> takePictureLauncher;
+
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     noteId = DetailsFragmentArgs.fromBundle(getArguments()).getNoteId();
-    requestCameraPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), (granted) ->{
-      if (granted) {
-        cameraPermissionGranted = true;
-      }
-      else {
-        cameraPermissionGranted = false;
-      }
-    });
+
   }
 
   @Nullable
@@ -94,16 +87,19 @@ public class DetailsFragment extends Fragment {
     }
     viewModel.getCaptureUri().observe(owner, this::handleCaptureUri);
     viewModel
-        .getEditing()
-        .observe(owner, this::handleEditing);
+        .getVisibilityFlags()
+        .observe(owner, flags -> handleVisibilityFlags(flags));
+    requestCameraPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), (granted) -> viewModel.setCameraPermission(granted));
     takePictureLauncher = registerForActivityResult(new TakePicture(),
         viewModel::confirmCapture);
     checkCameraPermission();
   }
-  private void handleEditing(Boolean editing) {
-    if (editing) {
+  private void handleVisibilityFlags(VisibilityFlags flags) {
+    if (flags.editing()) {
+      binding.staticContent.setVisibility(View.GONE);
+      binding.editableContent.setVisibility(View.VISIBLE);
       binding.editButton.setVisibility(View.GONE);
-      binding.addPhoto.setVisibility(cameraPermissionGranted ? View.VISIBLE : View.GONE);
+      binding.addPhoto.setVisibility(flags.cameraPermission() ? View.VISIBLE : View.GONE);
       binding.saveButton.setVisibility(View.VISIBLE);
       binding.cancelButton.setVisibility(View.VISIBLE);
     } else {
@@ -111,6 +107,8 @@ public class DetailsFragment extends Fragment {
       binding.addPhoto.setVisibility(View.GONE);
       binding.saveButton.setVisibility(View.GONE);
       binding.cancelButton.setVisibility(View.GONE);
+      binding.editableContent.setVisibility(View.VISIBLE);
+      binding.staticContent.setVisibility(View.GONE);
     }
   }
 
@@ -118,6 +116,14 @@ public class DetailsFragment extends Fragment {
     Image image = new Image();
     image.setUri(uri);
     note.getImages().add(image);
+  }
+
+  private void handleNote(NoteWithImages note) {
+    this.note = note;
+    binding.titleStatic.setText(note.getTitle());
+    binding.titleEditable.setText(note.getTitle());
+    binding.descriptionStatic.setText(note.getDescription());
+    binding.descriptionEditable.setText(note.getDescription());
   }
 
   @Override
@@ -134,7 +140,7 @@ public class DetailsFragment extends Fragment {
         requestCameraPermission();
       }
     } else{
-      cameraPermissionGranted = true;
+      viewModel.setCameraPermission(true);
     }
   }
 

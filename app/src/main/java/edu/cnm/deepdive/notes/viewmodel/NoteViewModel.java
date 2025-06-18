@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
@@ -29,11 +30,14 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
   private final MutableLiveData<Uri> captureUri;
   private final MutableLiveData<Throwable> throwable;
   private final MutableLiveData<Boolean> editing;
+  private final MutableLiveData<Boolean> cameraPermission;
+  private final MediatorLiveData<VisibilityFlags> visibilityFlags;
   private final CompositeDisposable pending;
   private final LiveData<NoteWithImages> note;
 
   private Uri pendingCaptureUri;
 
+  /** @noinspection DataFlowIssue*/
   @Inject
   NoteViewModel(@ApplicationContext Context context, NoteRepository repository) {
 
@@ -43,7 +47,15 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     note = Transformations.switchMap(noteId, repository::get);
     captureUri = new MutableLiveData<>();
     editing = new MutableLiveData<>(false);
-    throwable = new MutableLiveData<>();
+    cameraPermission = new MutableLiveData<>(false);
+    visibilityFlags = new MediatorLiveData<>();
+    visibilityFlags.addSource(editing, (editing) -> {
+      //noinspection DataFlowIssue
+      visibilityFlags.setValue(new VisibilityFlags(editing, cameraPermission.getValue()));
+    });
+    visibilityFlags.addSource(cameraPermission, (permission) -> visibilityFlags.setValue(new VisibilityFlags(editing.getValue(), permission)));
+
+  throwable = new MutableLiveData<>();
     pending = new CompositeDisposable();
   }
 
@@ -77,6 +89,17 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
 
   public void setEditing(boolean editing) {
     this.editing.setValue(editing);
+  }
+
+  public LiveData<Boolean> getCameraPermission(){
+    return cameraPermission;
+  }
+  public void setCameraPermission(boolean cameraPermission) {
+    this.cameraPermission.setValue(cameraPermission);
+  }
+
+  public LiveData<VisibilityFlags> getVisibilityFlags() {
+    return visibilityFlags;
   }
 
   public void confirmCapture(boolean success) {
@@ -122,4 +145,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     Log.e(NoteViewModel.class.getSimpleName(), throwable.getMessage(), throwable);
     this.throwable.postValue(throwable);
   }
+
+  public record VisibilityFlags(boolean editing, boolean cameraPermission){
+    }
 }
