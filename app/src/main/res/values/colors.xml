@@ -16,6 +16,11 @@
 -->
 <resources>
 
-  <!--TODO Define color resources.   -->
+  <color name="cancel">#FFFF0000</color>
+  <color name="ok">#FF00A000</color>
+  <color name="edit">#FF0000FF</color>
+  <color name="add">#00000000</color>
+
+
 
 </resources>
