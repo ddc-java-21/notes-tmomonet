@@ -94,6 +94,7 @@ public class DetailsFragment extends Fragment {
     else {
       note = new NoteWithImages();
       handleNote(note);
+      // TODO: 6/23/2025 Invoke method in viewModel to clear images. 
       viewModel.setEditing(true);
     }
     viewModel

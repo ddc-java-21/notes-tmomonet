@@ -136,11 +136,12 @@
 
 
 
-  <ListView
+  <androidx.recyclerview.widget.RecyclerView
     android:id="@+id/images"
     android:layout_width="0dp"
     android:layout_height="@dimen/thumbnail_list_height"
     android:orientation="horizontal"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     android:layout_marginTop="@dimen/half_dynamic_spacing"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintBottom_toBottomOf="parent"

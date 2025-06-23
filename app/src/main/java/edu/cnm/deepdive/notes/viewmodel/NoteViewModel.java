@@ -19,6 +19,7 @@ import edu.cnm.deepdive.notes.model.pojo.NoteWithImages;
 import edu.cnm.deepdive.notes.service.NoteRepository;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
@@ -39,6 +40,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
   private final CompositeDisposable pending;
 
   private Uri pendingCaptureUri;
+  private Instant noteModified;
 
   /**
    * @noinspection DataFlowIssue
@@ -180,6 +182,21 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
   public void onStop(@NonNull LifecycleOwner owner) {
     pending.clear();
     DefaultLifecycleObserver.super.onStop(owner);
+  }
+
+  @NonNull
+  private LiveData<NoteWithImages> setupNoteWithImages() {
+    LiveData<NoteWithImages> note = Transformations.switchMap(noteId, repository::get);
+    note.observeForever((n) -> {
+      if (n !=  null && !n.getModified().equals(noteModified)) {
+        List<Image> images = this.images.getValue();
+        images.clear();
+        images.addAll(n.getImages());
+        noteModified = n.getModified();
+        this.images.setValue(images);
+      }
+    });
+    return note;
   }
 
   private void postThrowable(Throwable throwable) {
