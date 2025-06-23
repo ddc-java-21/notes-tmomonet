@@ -27,6 +27,7 @@ import javax.inject.Inject;
 @HiltViewModel
 public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver {
 
+  /** @noinspection FieldCanBeLocal*/
   private final Context context;
   private final NoteRepository repository;
   private final MutableLiveData<Long> noteId;
@@ -51,24 +52,12 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     this.context = context;
     this.repository = repository;
     noteId = new MutableLiveData<>();
-    note = Transformations.switchMap(noteId, repository::get);
     images = new MutableLiveData<>(new ArrayList<>());
-    note.observeForever((note) -> {
-      List<Image> images = this.images.getValue();
-      images.clear();
-      images.addAll(note.getImages());
-      this.images.setValue(images);
-    });
+    note = setupNoteWithImages();
     captureUri = new MutableLiveData<>();
     editing = new MutableLiveData<>(false);
     cameraPermission = new MutableLiveData<>(false);
-    visibilityFlags = new MediatorLiveData<>();
-    visibilityFlags.addSource(editing, (editing) -> {
-      //noinspection DataFlowIssue
-      visibilityFlags.setValue(new VisibilityFlags(editing, cameraPermission.getValue()));
-    });
-    visibilityFlags.addSource(cameraPermission, (permission) -> visibilityFlags.setValue(
-        new VisibilityFlags(editing.getValue(), permission)));
+    visibilityFlags = setupVisibilityFlags();
 
     throwable = new MutableLiveData<>();
     pending = new CompositeDisposable();
@@ -106,6 +95,11 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     //noinspection DataFlowIssue
     images.remove(image);
     this.images.setValue(images);
+  }
+
+  public void clearImages() {
+    this.images.setValue(new ArrayList<>());
+    noteModified = null;
   }
 
   public LiveData<Uri> getCaptureUri() {
@@ -150,6 +144,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
 
   public void save(NoteWithImages note) {
     throwable.setValue(null);
+    //noinspection DataFlowIssue
     Single.just(note)
         .doOnSuccess((n) -> n.getImages().clear())
         .doOnSuccess((n) -> n.getImages().addAll(images.getValue()))
@@ -178,10 +173,23 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     return throwable;
   }
 
-  @Override
+
   public void onStop(@NonNull LifecycleOwner owner) {
     pending.clear();
     DefaultLifecycleObserver.super.onStop(owner);
+  }
+
+  /** @noinspection DataFlowIssue*/
+  @NonNull
+  private MediatorLiveData<VisibilityFlags> setupVisibilityFlags() {
+    MediatorLiveData<VisibilityFlags> visibilityFlags = new MediatorLiveData<>();
+    visibilityFlags.addSource(editing, (editing) -> {
+      //noinspection DataFlowIssue
+      visibilityFlags.setValue(new VisibilityFlags(editing, cameraPermission.getValue()));
+    });
+    visibilityFlags.addSource(cameraPermission, (permission) -> visibilityFlags.setValue(
+        new VisibilityFlags(editing.getValue(), permission)));
+    return visibilityFlags;
   }
 
   @NonNull

@@ -79,11 +79,6 @@
     </com.google.android.material.textfield.TextInputLayout>
 
   </LinearLayout>
-  <!--  TODO Define textview Widgets for read-only display of title and description.-->
-
-  <!--  TODO Define TextView widgets for display of crated and modified dates.-->
-
-  <!--  TODO Define text input layout /editText pairs for editable title and description.-->
 
   <ImageView
     android:id="@+id/edit_button"
