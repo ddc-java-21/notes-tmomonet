@@ -89,8 +89,7 @@ public class DetailsFragment extends Fragment {
       viewModel.setNoteId(noteId);
       viewModel
           .getNote()
-          .observe(owner, (note) ->
-              this.note = note);
+          .observe(owner, (this::handleNote));
     }
     else {
       note = new NoteWithImages();
