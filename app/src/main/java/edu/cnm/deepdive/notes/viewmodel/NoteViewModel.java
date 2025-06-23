@@ -15,8 +15,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import edu.cnm.deepdive.notes.model.entity.Image;
 import edu.cnm.deepdive.notes.model.entity.Note;
+import edu.cnm.deepdive.notes.model.entity.User;
 import edu.cnm.deepdive.notes.model.pojo.NoteWithImages;
 import edu.cnm.deepdive.notes.service.NoteRepository;
+import edu.cnm.deepdive.notes.service.UserRepository;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.time.Instant;
@@ -29,9 +31,12 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
 
   /** @noinspection FieldCanBeLocal*/
   private final Context context;
-  private final NoteRepository repository;
+  private final NoteRepository noteRepository;
+  private final UserRepository userRepository;
   private final MutableLiveData<Long> noteId;
   private final LiveData<NoteWithImages> note;
+  private final MutableLiveData<User> user;
+  private final LiveData<List<NoteWithImages>> notes;
   private final MutableLiveData<List<Image>> images;
   private final MutableLiveData<Uri> captureUri;
   private final MutableLiveData<Throwable> throwable;
@@ -40,6 +45,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
   private final MediatorLiveData<VisibilityFlags> visibilityFlags;
   private final CompositeDisposable pending;
 
+
   private Uri pendingCaptureUri;
   private Instant noteModified;
 
@@ -47,20 +53,24 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
    * @noinspection DataFlowIssue
    */
   @Inject
-  NoteViewModel(@ApplicationContext Context context, NoteRepository repository) {
+  NoteViewModel(@ApplicationContext Context context, @NonNull NoteRepository noteRepository,
+      @NonNull UserRepository userRepository) {
 
     this.context = context;
-    this.repository = repository;
+    this.noteRepository = noteRepository;
+    this.userRepository = userRepository;
     noteId = new MutableLiveData<>();
     images = new MutableLiveData<>(new ArrayList<>());
     note = setupNoteWithImages();
+    user = new MutableLiveData<>();
+    notes = Transformations.switchMap(user, noteRepository::getAll);
     captureUri = new MutableLiveData<>();
     editing = new MutableLiveData<>(false);
     cameraPermission = new MutableLiveData<>(false);
     visibilityFlags = setupVisibilityFlags();
-
     throwable = new MutableLiveData<>();
     pending = new CompositeDisposable();
+    fetchUser();
   }
 
   public MutableLiveData<Long> getNoteId() {
@@ -72,7 +82,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
   }
 
   public LiveData<List<NoteWithImages>> getNotes() {
-    return repository.getAll();
+    return notes;
   }
 
   public LiveData<NoteWithImages> getNote() {
@@ -148,7 +158,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
     Single.just(note)
         .doOnSuccess((n) -> n.getImages().clear())
         .doOnSuccess((n) -> n.getImages().addAll(images.getValue()))
-        .flatMap(repository::save)
+        .flatMap((n) -> noteRepository.save(n, user.getValue()))
         .subscribe(
             (n) -> noteId.postValue(n.getId()),
             this::postThrowable,
@@ -158,7 +168,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
 
   public void remove(Note note) {
     throwable.setValue(null);
-    repository
+    noteRepository
         .remove(note)
         .subscribe(
             () -> {
@@ -194,7 +204,7 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
 
   @NonNull
   private LiveData<NoteWithImages> setupNoteWithImages() {
-    LiveData<NoteWithImages> note = Transformations.switchMap(noteId, repository::get);
+    LiveData<NoteWithImages> note = Transformations.switchMap(noteId, noteRepository::get);
     note.observeForever((n) -> {
       if (n !=  null && !n.getModified().equals(noteModified)) {
         List<Image> images = this.images.getValue();
@@ -205,6 +215,17 @@ public class NoteViewModel extends ViewModel implements DefaultLifecycleObserver
       }
     });
     return note;
+  }
+
+  private void fetchUser() {
+    throwable.setValue(null);
+    userRepository
+        .getCurrentUser()
+        .subscribe(
+            user::postValue,
+            this::postThrowable,
+            pending
+        );
   }
 
   private void postThrowable(Throwable throwable) {
